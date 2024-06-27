@@ -13,8 +13,8 @@ import org.hiedacamellia.danmakutest.registery.Regitem;
 
 public class Testtab {
     public static final DeferredRegister<CreativeModeTab> REGISTRY = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Danmukutest.MODID);
-    public static final RegistryObject<CreativeModeTab> DANMUKTEST = REGISTRY.register("danmukutest",
-            () -> CreativeModeTab.builder().title(Component.translatable("item_group.danmukutest.test")).icon(() -> new ItemStack(Regitem.TESTDANMUKU.get())).displayItems((parameters, tabData) -> {
+    public static final RegistryObject<CreativeModeTab> DANMUKTEST = REGISTRY.register("danmakutest",
+            () -> CreativeModeTab.builder().title(Component.translatable("item_group.danmakutest.test")).icon(() -> new ItemStack(Regitem.TESTDANMUKU.get())).displayItems((parameters, tabData) -> {
                         tabData.accept(Regitem.TESTDANMUKU.get());
                     })
 

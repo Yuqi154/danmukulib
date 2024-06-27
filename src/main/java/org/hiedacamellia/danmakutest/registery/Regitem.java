@@ -12,5 +12,5 @@ import org.hiedacamellia.danmakutest.item.Testdanmuku;
 
 public class Regitem {
     public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, Danmukutest.MODID);
-    public static final RegistryObject<Item> TESTDANMUKU = REGISTRY.register("testdanmuku", () -> new Testdanmuku());
+    public static final RegistryObject<Item> TESTDANMUKU = REGISTRY.register("testdanmaku", Testdanmuku::new);
 }

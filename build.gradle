@@ -2,27 +2,26 @@ buildscript {
     repositories {
         maven { url = 'https://maven.minecraftforge.net' }
         mavenCentral()
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
         maven { url = 'https://maven.parchmentmc.org' }
     }
     dependencies {
-        classpath 'org.spongepowered:mixingradle:0.7.+'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.0.+', changing: true
+        classpath "org.spongepowered:mixingradle:0.7.+"
+        classpath 'org.parchmentmc:librarian:1.+'
     }
 }
 
-plugins {
-    id 'eclipse'
-    id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
-}
-
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
-group = mod_group_id
-version = mod_version
+version = "${lib_mod_version}"
 
 base {
-    archivesName = "${mod_id}-${mod_loader}-${minecraft_version}"
+    archivesName = "${lib_mod_id}-${lib_mod_loader}-${minecraft_version}"
 }
 
 java {
@@ -34,38 +33,53 @@ minecraft {
 
     copyIdeResources = true
 
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+
     runs {
-        // applies to all the run configs below
-        configureEach {
+        client {
             workingDirectory project.file('run')
-
+            arg "-mixin.config=${lib_mod_id}.mixins.json"
             property 'forge.logging.markers', 'REGISTRIES'
-
-            property 'forge.logging.console.level', 'debug'
-
+            property 'forge.logging.console.level', 'info'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             mods {
-                "${mod_id}" {
+                "${modid}" {
                     source sourceSets.main
                 }
             }
         }
 
-        client {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-
         server {
-            property 'forge.enabledGameTestNamespaces', mod_id
-            args '--nogui'
-        }
-        gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            workingDirectory project.file('run')
+            arg "-mixin.config=${lib_mod_id}.mixins.json"
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'info'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods {
+                "${modid}" {
+                    source sourceSets.main
+                }
+            }
         }
 
         data {
-            workingDirectory project.file('run-data')
+            workingDirectory project.file('run')
+            arg "-mixin.config=${lib_mod_id}.mixins.json"
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'info'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+            args '--mod', "${lib_mod_id}", '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+
+            mods {
+                "${modid}" {
+                    source sourceSets.main
+                }
+            }
         }
     }
 }
@@ -74,8 +88,8 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
+    add sourceSets.main, "${lib_mod_id}.refmap.json"
+    config "${lib_mod_id}.mixins.json"
 }
 
 repositories {
@@ -151,18 +165,18 @@ dependencies {
     implementation fg.deobf("curse.maven:just-enough-effect-descriptions-jeed-532286:4599236")
 
     implementation fg.deobf("curse.maven:touhou-little-maid-355044:5406149")
-    implementation fg.deobf("curse.maven:youkais-homecoming-957437:5428314")
+    implementation fg.deobf("curse.maven:youkais-homecoming-957437:5473188")
 
     implementation fg.deobf("curse.maven:jade-324717:4654448")
-    implementation fg.deobf("curse.maven:create-328085:4835191")
+    //implementation fg.deobf("curse.maven:create-328085:4835191")
     runtimeOnly fg.deobf("curse.maven:appleskin-248787:4605078")
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:4633797")
     runtimeOnly fg.deobf("curse.maven:spark-361579:4738952")
 
     implementation fg.deobf("curse.maven:bookshelf-228525:4808092")
-    implementation fg.deobf("curse.maven:botany-trees-411357:4719845")
-    implementation fg.deobf("curse.maven:botany-pots-353928:4793076")
-    implementation fg.deobf("curse.maven:serene-seasons-291874:4761603")
+    //implementation fg.deobf("curse.maven:botany-trees-411357:4719845")
+    //implementation fg.deobf("curse.maven:botany-pots-353928:4793076")
+    //implementation fg.deobf("curse.maven:serene-seasons-291874:4761603")
     //compileOnly fg.deobf("curse.maven:diet-443570:4634780")
     //compileOnly fg.deobf("curse.maven:thirst-was-taken-679270:5071555")
 
@@ -173,9 +187,11 @@ tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
             forge_version: forge_version, forge_version_range: forge_version_range,
-            loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors: mod_authors, mod_description: mod_description,youkaishomecoming_version_range: youkaishomecoming_version_range,
+            loader_version_range: loader_version_range,mod_license: mod_license,
+            lib_mod_id: lib_mod_id, lib_mod_name: lib_mod_name, lib_mod_license: lib_mod_license, lib_mod_version: lib_mod_version,
+            lib_mod_authors: lib_mod_authors, lib_mod_description: lib_mod_description,youkaishomecoming_version_range: youkaishomecoming_version_range,
+            test_mod_id: test_mod_id, test_mod_name: test_mod_name, test_mod_license: test_mod_license, test_mod_version: test_mod_version,
+            test_mod_authors: test_mod_authors, test_mod_description: test_mod_description,
     ]
 
     inputs.properties replaceProperties
@@ -188,12 +204,12 @@ tasks.named('processResources', ProcessResources).configure {
 tasks.named('jar', Jar).configure {
     manifest {
         attributes([
-                "Specification-Title": mod_id,
-                "Specification-Vendor": mod_authors,
+                "Specification-Title": lib_mod_id,
+                "Specification-Vendor": lib_mod_authors,
                 "Specification-Version": "1", // We are version 1 of ourselves
                 "Implementation-Title": project.name,
                 "Implementation-Version": project.jar.archiveVersion,
-                "Implementation-Vendor": mod_authors,
+                "Implementation-Vendor": lib_mod_authors,
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
@@ -204,4 +220,19 @@ tasks.named('jar', Jar).configure {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+jar {
+    manifest {
+        attributes([
+                "Specification-Title"     : "${lib_mod_id}",
+                "Specification-Vendor"    : "${lib_mod_authors}",
+                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.version,
+                "Implementation-Vendor"   : "${lib_mod_authors}",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                'MixinConfigs'            : "${lib_mod_id}.mixins.json"
+        ])
+    }
 }

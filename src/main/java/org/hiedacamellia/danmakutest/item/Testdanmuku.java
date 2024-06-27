@@ -5,6 +5,7 @@ import dev.xkmc.youkaishomecoming.content.spell.item.ItemSpell;
 import dev.xkmc.youkaishomecoming.content.spell.mover.RectMover;
 import dev.xkmc.youkaishomecoming.init.registrate.YHDanmaku;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
@@ -31,31 +32,45 @@ public class Testdanmuku extends Item {
     }
 
     @Override
+    public int getUseDuration(ItemStack itemstack) {
+        return 1;
+    }
+
+    @Override
     public void appendHoverText(ItemStack itemstack, Level world, List<Component> list, TooltipFlag flag) {
         super.appendHoverText(itemstack, world, list, flag);
         if (!Screen.hasShiftDown()) {
             list.add(Component.literal(
                     "§7§o" + Component.translatable("tooltip.danmukutest.press_shift").getString() + "§r"));
         } else {
-            List<String> description = Arrays
-                    .asList(Component.translatable("tooltip.danmukuetest.testdanmuku").getString().split("§n"));
+            String[] description = Component.translatable("tooltip.danmukuetest.testdanmuku").getString().split("§n");
             for (String line : description) {
                 list.add(Component.literal(line));
             }
         }
     }
 
+//    @Override
+//    public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
+//        InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
+//        var pos = entity.position();
+//        var dir = entity.getLookAngle();
+//        PlayerHolder holder = new PlayerHolder(entity, pos, null, null);
+//        var e = holder.prepareDanmaku(60, entity.getLookAngle(), YHDanmaku.Bullet.MENTOS, DyeColor.RED);
+//        e.setPos(pos);
+//        e.mover = new RectMover(pos, dir, Vec3.ZERO);
+//        return ar;
+//    }
+
+
     @Override
-    public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-        InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-        var pos = entity.position();
-        var dir = entity.getLookAngle();
-        PlayerHolder holder = new PlayerHolder(entity, pos, null, null);
-        var e = holder.prepareDanmaku(60, entity.getLookAngle(), YHDanmaku.Bullet.MENTOS, DyeColor.RED);
-        e.setPos(pos);
-        e.mover = new RectMover(pos, dir, Vec3.ZERO);
-        return ar;
+    public ItemStack finishUsingItem(ItemStack item, Level world, LivingEntity player) {
+        if (player instanceof ServerPlayer sp) {
+            var holder = new PlayerHolder(sp, sp.position(), null, null);
+            var e = holder.prepareDanmaku(60, sp.getLookAngle(), YHDanmaku.Bullet.MENTOS, DyeColor.RED);
+            e.setPos(sp.position());
+            e.mover = new RectMover(sp.position(), sp.getLookAngle(), Vec3.ZERO);
+        }
+        return item;
     }
-
-
 }

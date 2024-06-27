@@ -1,14 +1,15 @@
 {
   "required": true,
-  "minVersion": "0.8",
   "priority": 1000,
   "package": "org.hiedacamellia.danmakulib.mixin",
   "compatibilityLevel": "JAVA_17",
-  "refmap": "danmakulib.refmap.json",
-  "mixins": [],
-  "client": [],
-  "server": [],
+  "refmap": "youkaishomecoming.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+  ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "minVersion": "0.8"
 }

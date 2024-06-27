@@ -26,13 +26,12 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
-import org.hiedacamellia.danmakutest.Config;
 import org.hiedacamellia.danmakutest.registery.tab.Testtab;
 import org.slf4j.Logger;
 
 import org.hiedacamellia.danmakutest.registery.Regitem;
 
+@Mod(Danmukutest.MODID)
 public class Danmukutest {
 
     // Define mod id in a common place for everything to reference
